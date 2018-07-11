@@ -32,8 +32,13 @@ private[execution] class SchedulerCompanionImpl extends SchedulerCompanion {
     */
   def apply(
     context: ExecutionContext = StandardContext,
-    executionModel: ExecModel = ExecModel.Default): Scheduler =
-    AsyncScheduler(context, executionModel)
+    executionModel: ExecModel = ExecModel.Default): Scheduler = {
+
+    if (context == StandardContext && executionModel == ExecModel.Default)
+      Implicits.global
+    else
+      AsyncScheduler(context, executionModel)
+  }
 
   /** Builds a [[monix.execution.schedulers.TrampolineScheduler TrampolineScheduler]].
     *
@@ -71,7 +76,7 @@ private[execution] class SchedulerCompanionImpl extends SchedulerCompanion {
       * on top of `global.setTimeout`.
       */
     implicit lazy val global: Scheduler =
-      apply()
+      AsyncScheduler.makeGlobal()
 
     /** A [[monix.execution.Scheduler Scheduler]] instance that does
       * propagation of [[monix.execution.misc.Local.Context Local.Context]]

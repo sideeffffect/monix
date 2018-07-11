@@ -460,12 +460,7 @@ private[execution] class SchedulerCompanionImpl extends SchedulerCompanion {
       * $globalTuning
       */
     implicit lazy val global: Scheduler =
-      AsyncScheduler(
-        DefaultScheduledExecutor,
-        ExecutionContext.Implicits.global,
-        UncaughtExceptionReporter.default,
-        ExecModel.Default
-      )
+      AsyncScheduler.makeGlobal()
 
     /** A [[monix.execution.Scheduler Scheduler]] instance that does
       * propagation of [[monix.execution.misc.Local.Context Local.Context]]

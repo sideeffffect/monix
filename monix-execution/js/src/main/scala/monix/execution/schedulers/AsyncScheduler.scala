@@ -62,4 +62,13 @@ object AsyncScheduler {
     */
   def apply(context: ExecutionContext, executionModel: ExecModel): AsyncScheduler =
     new AsyncScheduler(context, executionModel)
+
+  /**
+    * Global reference, aka `monix.execution.Scheduler.Implicits.global`.
+    */
+  private[schedulers] def makeGlobal(): AsyncScheduler =
+    new AsyncScheduler(
+      StandardContext,
+      ExecModel.Default)
+      with IsGlobal
 }

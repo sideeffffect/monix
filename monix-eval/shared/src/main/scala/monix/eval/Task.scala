@@ -24,7 +24,6 @@ import monix.eval.internal._
 import monix.execution.ExecutionModel.{AlwaysAsyncExecution, BatchedExecution, SynchronousExecution}
 import monix.execution._
 import monix.execution.annotations.{UnsafeBecauseBlocking, UnsafeBecauseImpure}
-import monix.execution.cancelables.StackedCancelable
 import monix.execution.internal.Platform.fusionMaxStackDepth
 import monix.execution.internal.{Newtype1, Platform}
 import monix.execution.misc.ThreadLocal
@@ -3675,7 +3674,7 @@ object Task extends TaskInstancesLevel1 {
     *        in charge of evaluation on `runAsync`.
     *
     * @param connection is the
-    *        [[monix.execution.cancelables.StackedCancelable StackedCancelable]]
+    *        [[monix.execution.cancelables.TaskConnection TaskConnection]]
     *        that handles the cancellation on `runAsync`
     *
     * @param frameRef is a thread-local counter that keeps track
@@ -3696,7 +3695,7 @@ object Task extends TaskInstancesLevel1 {
     @deprecatedName('scheduler)
     private val schedulerRef: Scheduler,
     options: Options,
-    connection: StackedCancelable,
+    connection: TaskConnection,
     frameRef: FrameIndexRef) {
 
 
@@ -3742,17 +3741,17 @@ object Task extends TaskInstancesLevel1 {
     def withOptions(opts: Options): Context =
       new Context(schedulerRef, opts, connection, frameRef)
 
-    def withConnection(conn: StackedCancelable): Context =
+    def withConnection(conn: TaskConnection): Context =
       new Context(schedulerRef, options, conn, frameRef)
   }
 
   object Context {
     /** Initialize fresh [[Context]] reference. */
     def apply(scheduler: Scheduler, options: Options): Context =
-      apply(scheduler, options, StackedCancelable())
+      apply(scheduler, options, TaskConnection(scheduler, options))
 
     /** Initialize fresh [[Context]] reference. */
-    def apply(scheduler: Scheduler, options: Options, connection: StackedCancelable): Context = {
+    def apply(scheduler: Scheduler, options: Options, connection: TaskConnection): Context = {
       val em = scheduler.executionModel
       val frameRef = FrameIndexRef(em)
       new Context(scheduler, options, connection, frameRef)
@@ -3847,7 +3846,7 @@ object Task extends TaskInstancesLevel1 {
   /** Internal API — starts the execution of a Task with a guaranteed
     * asynchronous boundary, by providing
     * the needed [[monix.execution.Scheduler Scheduler]],
-    * [[monix.execution.cancelables.StackedCancelable StackedCancelable]]
+    * [[monix.execution.cancelables.TaskConnection TaskConnection]]
     * and [[Callback]].
     *
     * DO NOT use directly, as it is UNSAFE to use, unless you know
@@ -3871,7 +3870,7 @@ object Task extends TaskInstancesLevel1 {
   /** Internal API — starts the execution of a Task with a guaranteed
     * [[monix.execution.schedulers.TrampolinedRunnable trampolined asynchronous boundary]],
     * by providing the needed [[monix.execution.Scheduler Scheduler]],
-    * [[monix.execution.cancelables.StackedCancelable StackedCancelable]]
+    * [[monix.execution.cancelables.TaskConnection TaskConnection]]
     * and [[Callback]].
     *
     * DO NOT use directly, as it is UNSAFE to use, unless you know
@@ -3886,7 +3885,7 @@ object Task extends TaskInstancesLevel1 {
 
   /** Unsafe utility - starts the execution of a Task, by providing
     * the needed [[monix.execution.Scheduler Scheduler]],
-    * [[monix.execution.cancelables.StackedCancelable StackedCancelable]]
+    * [[monix.execution.cancelables.TaskConnection TaskConnection]]
     * and [[Callback]].
     *
     * DO NOT use directly, as it is UNSAFE to use, unless you know

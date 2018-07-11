@@ -49,7 +49,7 @@ import monix.eval.internal.TaskCancellation
   *   }
   * }}}
   */
-trait Fiber[A] extends cats.effect.Fiber[Task, A] {
+trait Fiber[A] extends cats.effect.Fiber[Task, A] with CancelableF[Task] {
   /**
     * Triggers the cancellation of the fiber.
     *

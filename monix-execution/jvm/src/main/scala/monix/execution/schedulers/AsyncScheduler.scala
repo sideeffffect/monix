@@ -26,7 +26,7 @@ import scala.concurrent.ExecutionContext
   * given `ScheduledExecutorService` and the tasks themselves are executed on
   * the given `ExecutionContext`.
   */
-final class AsyncScheduler private (
+class AsyncScheduler private (
   scheduler: ScheduledExecutorService,
   ec: ExecutionContext,
   r: UncaughtExceptionReporter,
@@ -71,4 +71,15 @@ object AsyncScheduler {
     reporter: UncaughtExceptionReporter,
     executionModel: ExecModel): AsyncScheduler =
     new AsyncScheduler(schedulerService, ec, reporter, executionModel)
+
+  /**
+    * Global reference, aka `monix.execution.Scheduler.Implicits.global`.
+    */
+  private[schedulers] def makeGlobal(): AsyncScheduler =
+    new AsyncScheduler(
+      Defaults.scheduledExecutor,
+      ExecutionContext.Implicits.global,
+      UncaughtExceptionReporter.default,
+      ExecModel.Default)
+      with IsGlobal
 }
